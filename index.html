@@ -1,114 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>ClobberX</title>
-    <meta charset="utf-8">
+<html>
+  <head>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            background-color: #0a192f;
-            color: #e6f1ff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 500px;
-            padding: 20px;
-            background-color: #112240;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-        .header {
-            margin-bottom: 20px;
-        }
-        .header h1 {
-            color: #00ffcc;
-            margin-bottom: 10px;
-        }
-        .header p {
-            color: #64ffda;
-        }
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        label {
-            font-weight: bold;
-            color: #00ffcc;
-            display: block;
-            margin-bottom: 5px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #00ffcc;
-            border-radius: 5px;
-            background-color: #233554;
-            color: #e6f1ff;
-            outline: none;
-        }
-        input:focus {
-            border-color: #64ffda;
-            box-shadow: 0 0 8px rgba(100, 255, 218, 0.6);
-        }
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #00ffcc;
-            color: #0a192f;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn:hover {
-            background-color: #64ffda;
-        }
-        .result-box {
-            background-color: #233554;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #00ffcc;
-            margin-top: 15px;
-            text-align: left;
-            color: #00ffcc;
-        }
-        .result-box pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>ClobberX</h1>
-            <p>Generate DOM clobbering payloads fast!</p>
-        </div>
-        <form>
-            <div class="form-group">
-                <label for="clobbering-target">Target variable - (The variable which we want to clobber)</label>
-                <input type="text" id="clobbering-target" placeholder="Examples: x.y.z, window.AMP_MODE">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/html.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css" />
+    <title>ClobberX</title>
+  </head>
+  <body>
+    <main class="clobber">
+      <div class="container">
+        <header class="logo">
+          <h1>
+              <span class="text-wrapper">Clobber</span>
+              <span class="text-wrapper-2">X</span>
+          </h1>
+        </header>
+        
+        <form class="form-container">
+          <div class="input-group">
+            <input 
+              type="text" 
+              id="clobbering-target"
+              class="input-field" 
+              placeholder="Target    Examples: window.MODE_DEBUG  ,  document.cookie "
+              aria-label="Target input"
+            />
+            <div class="icon-container">
+                <img class="input-icon" src="https://c.animaapp.com/vpz8jCvz/img/target.svg" alt="Target icon" />
             </div>
-            <div class="form-group">
-                <label for="clobbering-value">Value - (Leave as empty if you dont want to hijack the varaible to a particular value)</label>
-                <input type="text" id="clobbering-value" placeholder="Examples: malicious.js, clobbered">
+          </div>
+
+          <div class="input-group">
+            <input 
+              type="text" 
+              id="clobbering-value"
+              class="input-field" 
+              placeholder="Value ..."
+              aria-label="Value input"
+            />
+            <div class="icon-container">
+                <img class="input-icon" src="https://c.animaapp.com/vpz8jCvz/img/frame.svg" alt="Value icon" />
             </div>
-            <button type="submit" id="submit" class="btn">Generate Payload</button>
-            <div class="result-box">
-                <pre id="clobbering-result">Generated payload will appear here...</pre>
-            </div>
+          </div>
+
+          <button id="submit" class="generate-btn">
+              <span>Generate</span>
+              <img class="btn-icon" src="https://c.animaapp.com/vpz8jCvz/img/-x32-.svg" alt="Generate icon" />
+            <span>Payload</span>
+          </button>
         </form>
-    </div>
-    <script src="./payload_generator.js"></script>
-</body>
+
+        <div class="result-box" id="clobbering-result"></div>
+      </div>
+    </main>
+  </body>
+  <script src="static/payload_generator.js"></script>
 </html>

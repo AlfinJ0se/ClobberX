@@ -240,7 +240,7 @@ let create_dom_clobbering_html_payload = function (statement) {
         } else if (code_targets_length === 4) {
             // document.x.y.z for name= attr should be used and needs </form> to become a HTML Collection
             output = output.concat([
-                `<form name="${code_targets[1]}"></form><form name="${code_targets[1]}" id="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
+                `<form name="${code_targets[1]}"></form><form name="${code_targets[1]}" id="${code_targets[2]}"><input name="${code_targets[3]}" value="${clobbering_value}"></form>`,
                 `Chrome : ${chainIframes(code_targets, 0)}`,
             ]);
         } else {
@@ -254,12 +254,7 @@ let create_dom_clobbering_html_payload = function (statement) {
 };
 
 
-function get_bootstrap_color_class(i) {
-    /* pick a random color */
-    let idx = i % 8;
-    var choices = ['primary', 'success', 'warning', 'danger', 'secondary', 'info', 'warning', 'dark'];
-    return choices[idx];
-}
+
 
 function sanitize(markup) {
     return markup.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -299,14 +294,65 @@ submit_button.addEventListener('click', (e) => {
         "clobbering_value": clobbering_value
     });
 
-    results_container.innerHTML = outputs.map((markup, idx) =>
-        `<div>
-            <span>${sanitize(markup)}</span>          
-        </div>`).join('');
+    results_container.innerHTML = outputs.map((markup, idx) => {
+        let sanitized = sanitize(markup);
+        
+        let isChrome = false;
+
+        if (sanitized.startsWith("Chrome : ")) {
+            sanitized = sanitized.replace("Chrome : ", "");
+            isChrome = true;
+        }
+        
+        return (`
+        <section class="output">
+            <div class="output-header">
+                <div class="browsers">
+                    <img class="chrome" src="https://c.animaapp.com/ro2F2Lav/img/chrome@2x.png" />
+                    ${!isChrome ? '<img class="firefox" src="https://c.animaapp.com/ro2F2Lav/img/firefox@2x.png" />' : ''}
+                </div>
+                
+                <div class="output-actions">
+                <button class="action-btn encode-btn">
+                    <img src="https://c.animaapp.com/vpz8jCvz/img/encode.svg" alt="Encode" />
+                    <span>Encode</span>
+                </button>
+                <button class="action-btn copy-btn">
+                    <img src="https://c.animaapp.com/vpz8jCvz/img/copy@2x.png" alt="Copy" />
+                    <span>Copy</span>
+                </button>
+                </div>
+            </div>
+            <div class="output-content">
+                <pre>
+                    <code class="language-html">
+                        ${sanitized.trim()}
+                    </code>
+                </pre>
+            </div>
+        </section>
+        `)
+    }).join('');
+
+    document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+    });
 });
 
 $("#clobbering-result").on("click", ".copy-btn", function (e) {
-    let input = e.target.closest('div').firstChild.nextSibling;
-    let copied_banner = e.target.closest('span').nextSibling.nextSibling;
-    copyToClipboard(input, copied_banner);
+    let outputContent = $(this).closest("section").find(".output-content").text();
+
+    navigator.clipboard.writeText(outputContent);
+});
+
+$("#clobbering-result").on("click", ".encode-btn", function () {
+    let outputContentElement = $(this).closest("section").find(".output-content");
+    let originalText = outputContentElement.text().trim();
+    
+    let encodedText = encodeURIComponent(originalText);
+
+    outputContentElement.text(encodedText);
+    document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+    });
 });
