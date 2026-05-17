@@ -93,8 +93,3 @@ clobberX automatically generates nested `iframe[srcdoc]` payload chains.
 ---
 
 
----
-
-## Links
-
-- Hosted : https://clobberx.netlify.app/
