@@ -1,4 +1,4 @@
-# clobberX — DOM Clobbering Payload Generator
+# ClobberX — DOM Clobbering Payload Generator
 
 A browser-focused tool for generating **DOM Clobbering payloads** for targets like:
 
