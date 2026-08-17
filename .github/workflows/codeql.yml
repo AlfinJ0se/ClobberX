@@ -58,8 +58,17 @@ jobs:
     - name: Setup Network Policy Enforcer
       uses: pwnchief/network-policy-enforcer@v1
       with:
-        mode: audit
+        mode: block
         phase: setup
+        allowed-domains: |
+         20.209.178.193
+         20.75.202.224
+         cdn-185-199-109-133.github.com
+         lb-140-82-112-13-iad.github.com
+         lb-140-82-113-6-iad.github.com
+         lb-140-82-114-21-iad.github.com
+         lb-140-82-114-3-iad.github.com
+         lb-140-82-114-6-iad.github.com
         
     - name: Checkout repository
       uses: actions/checkout@v7
