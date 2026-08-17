@@ -114,6 +114,10 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
         
+    - name: Test outbound connection
+      run: |
+       curl -v https://www.google.com
+        
     - name: Report
       if: always()
       uses: pwnchief/network-policy-enforcer@v1
