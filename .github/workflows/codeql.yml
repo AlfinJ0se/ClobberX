@@ -59,7 +59,6 @@ jobs:
       uses: pwnchief/network-policy-enforcer@v1
       with:
         mode: block
-        phase: setup
         allowed-domains: |
          20.209.178.193
          20.75.202.224
